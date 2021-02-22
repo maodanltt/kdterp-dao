@@ -13,14 +13,14 @@ import java.util.List;
 public class Test {
 
     public static void main(String[] args) {
-        ApplicationContext ac = new ClassPathXmlApplicationContext("classpath*:spring/applicationContext.xml");
+        ApplicationContext ac = new ClassPathXmlApplicationContext("classpath:spring/applicationContext.xml");
         SqlSessionFactory sqlSessionFactory  = (SqlSessionFactory)ac.getBean("sqlSessionFactory");
         SqlSession sqlSession = sqlSessionFactory.openSession();
-        Condition condition = new Condition();
-        condition.setEnddate("2021-02");
-        condition.setStartdate("2021-02");
+
         try {
-            List<Item> list = sqlSession.selectList("queryItemList", Condition.class);
+            Item item = sqlSession.selectOne("queryItemByName", "看，这样养猪！—科学养猪智慧观念");
+            System.out.println(item);
+            sqlSession.commit(true);
         }catch (Exception e) {
             e.printStackTrace();
         }

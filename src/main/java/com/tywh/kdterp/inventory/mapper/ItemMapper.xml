@@ -43,6 +43,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             and sxh not like #{sxhRemove} group by shum,tsfljc,dj,kjqj
         </where>
     </select>
+
+    <select id="queryItemByName" parameterType="java.lang.String" resultType="item">
+        select * from fxsgkview where shum = #{shum}
+    </select>
 </mapper>
 
 

@@ -15,4 +15,6 @@ public interface ItemMapper {
 //  Map<String, Integer> queryKucun(Condition conditon) throws Exception;
     List<Item> queryKucun(Condition condition) throws Exception;
 
+    Item queryItemByName(String name) throws Exception;
+
 }

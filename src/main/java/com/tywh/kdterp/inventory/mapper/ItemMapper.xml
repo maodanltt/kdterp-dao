@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tywh.kdterp.inventory.mapper.ItemMapper">
+
+    <select id="queryItemList" parameterType="condition" resultType="item">
+        select a.shum,a.gjdj,a.tsfljc,b.xscs from FxsgkView a left join
+        (select shum,dj,tsfljc, sum(cs) as xscs from (select fhdbh,sxh,shum,tsfljc, dj,kwbh,cs from xsmxview
+        union select fhdbh,sxh,shum,tsfljc,dj,kwbh,cs from XsmxnView) xsmx where fhdbh in (select fhdbh
+        from (select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120) shrq,khbh,fhzt,xsbmmc from xsdview
+        union select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120) shrq,khbh,fhzt,xsbmmc from
+        xsdnview) xsd
+        <where>
+            <foreach collection="condition.fhzts" item="fhzt" open="fhzt in (" close=")" separator=",">
+                #{fhzt}
+            </foreach>
+            and  shrq >= #{condition.startdate} and shrq &lt;= #{condition.enddate}
+            <if test="condition.xsbmmc != ''">
+                and xsbmmc like '%${condition.xsbmmc}%'
+            </if>
+        </where>
+        and khbh &lt;> #{condition.khbhRemove})
+        group by shum,dj,tsfljc) b on a.shum = b.shum and a.tsfljc = b.tsfljc
+        and a.gjdj = b.dj where sxh not like #{condition.sxhRemove}
+        <foreach collection="condition.tsfljcRemove" item="tsflmc" open="(" close=")" separator="and a.tsfljc not like">
+            #{tsflmc}
+        </foreach>
+        and bmmc like '%${condition.bjbmmc}%'
+        and a.tsfljc like '%${condition.tsfljc}%'
+        group by a.shum,a.gjdj, a.tsfljc,b.xscs order by b.xscs desc
+    </select>
+
+    <select id="queryKucun" parameterType="condition" resultType="item">
+        select shum,tsfljc,dj as gjdj,kjqj,SUM(qckc) qckc,SUM(qmkc) qmkc from (SELECT shum,tsfljc,dj,qckc,qmkc,kjqj,sxh,kwbh
+        FROM kcknView union select shum,tsfljc,dj,qckc,qmkc,convert(varchar(7),dateadd(month,0,getdate()),120)
+        kjqj,sxh,kwbh from KucunView) t1
+        <where>
+            KWBH = #{condition.kwbh} AND kjqj >= #{kjqj}
+            <foreach collection="condition.tsfljcRemove" item="tsflmc" open="(" close=")" separator="and a.tsfljc not like">
+                #{tsflmc}
+            </foreach>
+            and sxh not like #{sxhRemove} group by shum,tsfljc,dj,kjqj
+        </where>
+    </select>
+</mapper>
+
+

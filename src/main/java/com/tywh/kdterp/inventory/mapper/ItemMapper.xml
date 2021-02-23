@@ -5,30 +5,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 <mapper namespace="com.tywh.kdterp.inventory.mapper.ItemMapper">
 
     <select id="queryItemList" parameterType="condition" resultType="item">
-        select a.shum,a.gjdj,a.tsfljc,b.xscs from FxsgkView a left join
-        (select shum,dj,tsfljc, sum(cs) as xscs from (select fhdbh,sxh,shum,tsfljc, dj,kwbh,cs from xsmxview
-        union select fhdbh,sxh,shum,tsfljc,dj,kwbh,cs from XsmxnView) xsmx where fhdbh in (select fhdbh
-        from (select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120) shrq,khbh,fhzt,xsbmmc from xsdview
-        union select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120) shrq,khbh,fhzt,xsbmmc from
-        xsdnview) xsd
+        select a.shum,a.gjdj,a.tsfljc,b.xscs from FxsgkView a left join (select shum,dj,tsfljc, sum(cs) as xscs
+        from (select fhdbh,sxh,shum,tsfljc, dj,kwbh,cs from xsmxview union select fhdbh,sxh,shum,tsfljc,dj,kwbh,cs
+        from XsmxnView) xsmx where fhdbh in (select fhdbh from (select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120)
+        shrq,khbh,fhzt,xsbmmc from xsdview union select fhdbh,convert(varchar(7),dateadd(month,0,shrq),120)
+        shrq,khbh,fhzt,xsbmmc from xsdnview) xsd
         <where>
             <foreach collection="fhzts" item="fhzt" open="fhzt in (" close=")" separator=",">
-                #{fhzt}
+            #{fhzt}
             </foreach>
             and  shrq >= #{startdate} and shrq &lt;= #{enddate}
-            <if test="xsbmmc != ''">
+            <if test="xsbmmc != null and xsbmmc != ''">
                 and xsbmmc like '%${xsbmmc}%'
             </if>
+            and khbh &lt;> #{khbhRemove}) group by shum,dj,tsfljc) b on a.shum = b.shum and a.tsfljc = b.tsfljc
+            and a.gjdj = b.dj where sxh not like #{sxhRemove}
+            <foreach collection="tsfljcRemove" item="tsflmc" open="and" close="" separator="and">
+                a.tsfljc not like #{tsflmc}
+            </foreach>
+            <if test="bjbmmc != null and bjbmmc != ''">
+                and bmmc like '%${bjbmmc}%'
+            </if>
+            <if test="tsfljc != null and tsfljc != ''">
+                and a.tsfljc like '%${tsfljc}%'
+            </if>
         </where>
-        and khbh &lt;> #{khbhRemove})
-        group by shum,dj,tsfljc) b on a.shum = b.shum and a.tsfljc = b.tsfljc
-        and a.gjdj = b.dj where sxh not like #{sxhRemove}
-        <foreach collection="tsfljcRemove" item="tsflmc" open="(" close=")" separator="and a.tsfljc not like">
-            #{tsflmc}
-        </foreach>
-        and bmmc like '%${bjbmmc}%'
-        and a.tsfljc like '%${tsfljc}%'
-        group by a.shum,a.gjdj, a.tsfljc,b.xscs order by b.xscs desc
+            group by a.shum,a.gjdj, a.tsfljc,b.xscs order by b.xscs desc
     </select>
 
     <select id="queryKucun" parameterType="condition" resultType="item">
@@ -37,8 +39,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         kjqj,sxh,kwbh from KucunView) t1
         <where>
             KWBH = #{kwbh} AND kjqj >= #{kjqj}
-            <foreach collection="tsfljcRemove" item="tsflmc" open="(" close=")" separator="and a.tsfljc not like">
-                #{tsflmc}
+            <foreach collection="tsfljcRemove" item="tsflmc" open="and" close="" separator="and">
+                tsfljc not like #{tsflmc}
             </foreach>
             and sxh not like #{sxhRemove} group by shum,tsfljc,dj,kjqj
         </where>
